@@ -37,6 +37,7 @@ Once you have selected a peer via `use`, these commands are sent directly to the
 
 | Command | Description | Usage |
 | :--- | :--- | :--- |
+| `run` | executed as a shell command (sh, cmd) | `run <command> <args>` |
 | `ls` | List directory contents. | `ls <path>` |
 | `cd` | Change current working directory. | `cd <path>` |
 | `pwd` | Print current working directory. | `pwd` |
@@ -47,7 +48,6 @@ Once you have selected a peer via `use`, these commands are sent directly to the
 | `background` | Detach from the peer and return to global mode. | `background` (or `back`) |
 | `help` | Show peer-specific commands. | `help` |
 
-**Shell Fallback:** Any command not recognized as a built-in command (e.g., `whoami`, `cat`, `ip addr`) is automatically executed as a shell command on the remote agent.
 
 ## Example: Remote Interaction
 

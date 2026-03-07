@@ -1,43 +1,35 @@
-# Networking & Protocol
+# Networking Architecture
 
-SkoveNet leverages the **libp2p** stack to provide a robust, modular networking layer.
+SkoveNet is built on the **libp2p** stack, providing a modular and resilient peer-to-peer networking layer.
 
-## The Transport Layer
+## Transport Layer
 
-The system supports multiple transports to ensure connectivity in various environments:
+The system uses multiple transport protocols to ensure connectivity across different network environments:
 
-*   **TCP**: Standard reliable transport.
-*   **WebSockets**: Useful for bypassing some firewalls that allow HTTP/S traffic.
-*   **WebRTC** (Planned/Partial): For direct browser-to-node communication and superior NAT hole punching.
+*   **TCP**: The primary reliable transport for node-to-node communication.
+*   **WebSockets**: Used as a fallback to bypass restrictive firewalls that only permit HTTP/S traffic.
+*   **QUIC / WebRTC** (Planned): Currently being evaluated for improved NAT traversal and browser-to-node connectivity.
 
-## Encryption & Security
+## Security & Encryption
 
-All connections are automatically encrypted using the **Noise Protocol Framework**.
-*   **Handshake**: Nodes perform a handshake to establish a shared secret.
-*   **Authentication**: Peer IDs are cryptographically derived from their public keys, preventing identity spoofing.
+All network traffic is encrypted and authenticated using the **Noise Protocol Framework**.
 
-## Routing Logic
+*   **Handshake**: Nodes perform a cryptographic handshake to establish secure, encrypted sessions.
+*   **Identity (Peer IDs)**: Peer identities are cryptographically derived from **Ed25519** public keys, ensuring that node IDs cannot be spoofed.
+*   **Command Signing**: Command messages from the operator are signed using an Ed25519 private key. Implants verify these signatures before execution to prevent unauthorized control.
 
-How does a command from Node A reach specific Node Z if they aren't directly connected?
+## Routing: GossipSub Mesh
 
-### Flood Routing (Current)
-Currently, SkoveNet uses a controlled flood (gossip) mechanism for message delivery.
+SkoveNet has migrated from basic flood routing to **GossipSub**, a more efficient and scalable pubsub routing mechanism.
 
-1.  **Origin**: Node A creates a message with `Target=Z` and `TTL=10`.
-2.  **Propagation**: A sends it to all connected peers (B, C).
-3.  **Forwarding**: B receives it.
-    *   Checks if it has seen this Message ID before (deduplication).
-    *   Decrements TTL.
-    *   Forwards to its peers (D, E).
-4.  **Delivery**: Eventually, the message reaches Z, or the TTL expires.
-
-### GossipSub (Planned)
-For larger scale, we plan to migrate to **GossipSub**, a more efficient pubsub router that uses mesh maintenance strategies to reduce bandwidth usage while ensuring high delivery reliability.
+*   **Mesh Maintenance**: Nodes maintain a local "mesh" of connected peers (target degree of 6) to balance bandwidth usage and delivery reliability.
+*   **Message Propagation**: Messages are propagated through the mesh using an intelligent gossip mechanism, reducing redundant traffic while ensuring high delivery rates.
+*   **Deduplication**: Every message is tracked by ID to prevent loops and redundant processing.
 
 ## NAT Traversal
 
-One of the biggest challenges in P2P is connectivity behind NATs (Network Address Translation). SkoveNet uses:
+To maintain connectivity behind NATs and firewalls, SkoveNet employs several automated strategies:
 
-1.  **UPnP / NAT-PMP**: Attempts to automatically map ports on the router.
-2.  **AutoNAT**: Nodes ask peers "What is my public IP?" to determine reachability.
-3.  **Hole Punching**: Techniques to open direct lines between two nodes behind NATs without a relay.
+1.  **UPnP & NAT-PMP**: Attempts to automatically configure port forwarding on compatible routers.
+2.  **AutoNAT**: Nodes utilize peers to determine their own public reachability and IP address.
+3.  **Hole Punching**: Integrated libp2p hole punching (DCUtR) attempts to establish direct connections between nodes behind NATs without requiring a relay.

@@ -50,15 +50,11 @@ This guide covers common issues encountered while deploying and operating SkoveN
 *   **Fix**: Ensure you are using **Go 1.25.4+**. 
 *   **Fix**: Run `make vendor` or `go mod download` before building.
 
-### Access Denied (Windows)
-*   **Cause**: Windows Defender or other AV software may flag the P2P behavior as suspicious.
-*   **Fix**: Add an exclusion for the agent binary or the working directory.
-
 ---
 
 ## Deep Debugging
 
-If you're still stuck, run the agent with the environment variable `LOG_LEVEL=debug` (if supported) or simply watch the stdout for:
+If you're still stuck, run the agent with the flag `--debug` and watch the stdout for:
 *   `Host created via tcp ...` - Confirms the node started.
 *   `Radar ping from ...` - Confirms mesh broadcast is working.
 *   `Signature verified ...` - Confirms your operator keys are working.

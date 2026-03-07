@@ -66,12 +66,4 @@ func NewHandler(n *node.Node) *Handler {
 }
 ```
 
-## How It Works (Shell Fallback)
 
-Whenever a command is received from the controller:
-1. The executor parses the first word (the command name).
-2. It checks if the command name matches against any registered `Command` explicitly.
-3. If a match is found, it forwards the rest of the arguments to that `Execute` method.
-4. **Fallback:** If no match is found, the **entire command string** seamlessly falls back to the native `shell` executor (`shell_unix.go` or `shell_windows.go`).
-
-This backward-compatible approach ensures that standard terminal commands like `ls -la`, `whoami`, or `cat file.txt` continue to work natively without requiring you to explicitly register those commands.

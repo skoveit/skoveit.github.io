@@ -1,23 +1,29 @@
-# Peer Discovery
+# Node Discovery
 
-Discovery is the process by which SkoveNet nodes find each other without a central server.
+Discovery is the process by which SkoveNet nodes locate and connect to peers to form the mesh network.
 
-## 1. mDNS (Local Network)
+## Local Discovery: mDNS
 
-**Multicast DNS (mDNS)** is enabled by default. It allows nodes on the same Local Area Network (LAN) to discover each other automatically.
+By default, SkoveNet uses **mDNS (Multicast DNS)** for automated discovery on local area networks.
 
-*   **Service Name**: `_mesh-c2._tcp`
-*   **Mechanism**: Nodes broadcast their presence. When a peer is detected, the node attempts to connect if it hasn't reached its max peer limit.
-*   **Use Case**: rapid local deployment, testing, and lateral movement within a subnet.
+*   **Service Tag**: `mesh-c2`
+*   **Mechanism**: Nodes broadcast their identity and listen for peer announcements. When a new peer is found, the node caches the address info and attempts a connection.
+*   **Jitter**: Connection attempts include a random jitter (500ms - 2000ms) to reduce network noise and coordination spikes.
 
-## 2. Bootstrap Nodes (Internet)
+## Mesh propagation (Peer Exchange)
 
-For internet-wide connectivity where multicast is not available, SkoveNet uses **Bootstrap Nodes**.
-*   These are stable nodes with known addresses (IP:Port).
-*   New nodes connect to bootstrap nodes to join the mesh and find other peers.
+Nodes also discover new peers through the GossipSub mesh. As nodes connect to each other, they share information about their known peers, allowing the network to expand dynamically beyond the local subnet.
 
-## 3. DHT (Planned)
+## Network Limits
 
-We are implementing a **Kademlia Distributed Hash Table (DHT)**.
-*   **Function**: Allows nodes to "announce" themselves to the global network request peers closest to a random key.
-*   **Benefit**: Enables fully decentralized peer discovery across the public internet without relying on hardcoded bootstrap lists.
+The system maintains a healthy network topology through strict connection management:
+*   **HighWater Mark**: A maximum of 8 concurrent peer connections.
+*   **LowWater Mark**: A minimum of 4 peer connections.
+*   **NAT Service**: Nodes provide and utilize NAT traversal services (AutoNAT and UPnP) to ensure connectivity between peers in different environments.
+
+---
+
+### Roadmap
+
+*   **DHT (Kademlia)**: Planned for global peer discovery across the public internet without the need for central registry or bootstrap nodes.
+*   **Bootstrap Nodes**: Configuration for static entry points into the network.
