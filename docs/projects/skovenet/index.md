@@ -2,7 +2,7 @@
 
 <img src="/skoving/assets/images/banner.jpg" alt="structure diagram" />
 
-**SkoveNet** is a decentralized Command & Control (C2) framework engineered to eliminate Single Points of Failure and ensure maximum operator anonymity.
+[SkoveNet](https://github.com/skoveit/skovenet) is a decentralized Command & Control (C2) framework engineered to eliminate Single Points of Failure and ensure maximum operator anonymity.
 
 Unlike client-server C2 models, SkoveNet implements a decoupled Agent-Controller architecture. This allows the operator to interface with the network through any active node, removing the dependency on a static command center and obfuscating the operator's physical location.
 
