@@ -158,7 +158,7 @@ nav:
                   - Enumeration: notes/red/windows/70%/Enum.md
                   - Exfiltration: notes/red/windows/70%/ExFil.md
                   - Privilege Escalation: notes/red/windows/70%/PrivEsc.md
-                  - Lateral Movement: notes/red/windows/70%/Leteral Movement/Leteral Movement.md
+                  - Lateral Movement: notes/red/windows/70%/lateral Movement/lateral Movement.md
                   - OPSEC: notes/red/windows/70%/OPSEC/OPSEC.md
                   - Persistence:
                       - AD Persistence: notes/red/windows/70%/persistence/AD persistance.md

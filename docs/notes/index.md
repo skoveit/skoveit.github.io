@@ -257,7 +257,7 @@ hide:
       <span class="n-arrow">→</span>
     </a>
 
-    <a href="red/windows/70%25/Leteral%20Movement/Leteral%20Movement/" class="n-card" data-cat="red">
+    <a href="red/windows/70%25/lateral%20Movement/lateral%20Movement/" class="n-card" data-cat="red">
       <span class="n-num">11</span>
       <div>
         <div class="n-tag">Red Team</div>
