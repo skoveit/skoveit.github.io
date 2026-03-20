@@ -1,7 +1,7 @@
 site_name: skoving
 site_url: https://skoveit.github.io/skoving/
 
-copyright: "Skove / Anas"
+copyright: ""
 
 extra:
   generator: false
