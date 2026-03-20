@@ -1,13 +1,23 @@
 site_name: skoving
 site_url: https://skoveit.github.io/skoving/
 
-copyright: ""
+copyright: "Skove / Anas"
 
 extra:
   generator: false
   analytics:
     provider: google
     property: G-QTX3WF018B
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/skoveit
+    - icon: fontawesome/brands/linkedin
+      link: https://www.linkedin.com/in/anas1337/
+    - icon: fontawesome/brands/x-twitter
+      link: https://x.com/skoveit
+    - icon: fontawesome/regular/envelope
+      link: mailto:skoveit@proton.me
+
 
 
 theme:
