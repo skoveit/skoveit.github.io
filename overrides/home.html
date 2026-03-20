@@ -72,6 +72,7 @@ This file was automatically generated - do not edit
     display: grid;
     grid-template-rows: 1fr auto;
     overflow: hidden;
+    overflow-x: hidden; /* FIX: prevent horizontal scroll */
     z-index: 10;
     font-family: 'Geist Mono', monospace;
     color: var(--cream);
@@ -182,7 +183,7 @@ This file was automatically generated - do not edit
     line-height: 1.85;
     letter-spacing: 0.02em;
     max-width: 600px;
-    white-space: nowrap;
+    white-space: normal; /* FIX: was nowrap, caused text to overflow off screen */
     opacity: 0;
     animation: up 0.7s 0.44s ease both;
   }
@@ -517,7 +518,6 @@ This file was automatically generated - do not edit
     letter-spacing: 0.12em;
   }
 
-  /* ── Colophon social icons ── */
   .s-colophon-socials {
     display: flex;
     align-items: center;
@@ -565,6 +565,7 @@ This file was automatically generated - do not edit
   @media (max-width: 900px) {
     .s {
       overflow-y: auto;
+      overflow-x: hidden; /* FIX: prevent horizontal scroll on tablet */
     }
 
     .s-hero {
@@ -591,14 +592,17 @@ This file was automatically generated - do not edit
   @media (max-width: 640px) {
     .s-hero {
       padding: 2rem 1.5rem;
+      overflow-x: hidden; /* FIX: prevent horizontal scroll on mobile */
     }
 
     .s-cta {
       flex-direction: column;
+      width: 100%; /* FIX: keep buttons within bounds */
     }
 
     .s-btn {
       justify-content: center;
+      width: 100%; /* FIX: full-width buttons on mobile */
     }
 
     .s-colophon-right {
@@ -727,7 +731,6 @@ This file was automatically generated - do not edit
       <span class="s-colophon-alias">/ Skove</span>
     </div>
 
-    <!-- Icon-only social row in the footer bar -->
     <div class="s-colophon-socials">
       <a href="https://github.com/skoveit" target="_blank" rel="noopener" class="s-colophon-icon" title="GitHub">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
