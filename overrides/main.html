@@ -3,13 +3,20 @@ This file was automatically generated - do not edit
 -#}
 {% extends "base.html" %}
 
+{% block htmltitle %}
+<title>{% if page.title %}{{ page.title }} — Skoving{% else %}Skoving — Offensive Security Research{% endif %}</title>
+{% endblock %}
+
 {% block extrahead %}
+<link rel="icon" href="https://skoveit.github.io/assets/images/profile.png" />
+<link rel="shortcut icon" href="https://skoveit.github.io/assets/images/profile.png" />
+<link rel="apple-touch-icon" href="https://skoveit.github.io/assets/images/profile.png" />
 <meta name="google-site-verification" content="EM5_p-hZ5hn9yo7Q4IDcOCgQPjWIcrB5mJHLakNlkgA" />
 <!-- Open Graph -->
 <meta property="og:site_name" content="Skoving" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://skoveit.github.io{{ page.url }}" />
-<meta property="og:image" content="https://skoveit.github.io/assets/images/profile.jpg" />
+<meta property="og:image" content="https://skoveit.github.io/assets/images/profile.png" />
 <meta property="og:title"
     content="{% if page.title %}{{ page.title }} — Skoving{% else %}Skoving — Offensive Security Research{% endif %}" />
 <meta property="og:description"

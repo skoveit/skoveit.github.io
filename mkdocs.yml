@@ -24,6 +24,7 @@ extra:
 
 theme:
   name: material
+  favicon: assets/images/profile.png
   custom_dir: overrides
   features:
     - content.action.edit
