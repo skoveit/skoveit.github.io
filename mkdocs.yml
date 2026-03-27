@@ -136,6 +136,7 @@ nav:
       - C2: 
           - Sliver - Uno Reverse: writeups/C2/Sliver-UnoReverse.md
       - Web:
+          - MCP Security: writeups/chain/mcp-security.html
           - FTPbox Hardcoded Credentials: writeups/web/FTPbox.md
           - JavaScript Recon to PII Exposure: writeups/web/PII-discl.md
       - Maldev:

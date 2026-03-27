@@ -225,6 +225,16 @@ hide:
     </a>
 
 
+    <a href="chain/mcp-security.html" class="wr-card" data-cat="chain">
+      <span class="wr-num">02</span>
+      <div class="wr-card-body">
+        <div class="wr-tag">Web &amp; C2 Security</div>
+        <div class="wr-card-name">MCP Servers — One Click to Compromise</div>
+        <div class="wr-card-desc">Analyzing a critical CORS and authentication flaw in mcp-go affecting Nhost and Sliver C2 infrastructure.</div>
+      </div>
+      <span class="wr-arrow">→</span>
+    </a>
+
     <a href="web/FTPbox/" class="wr-card" data-cat="web">
       <span class="wr-num">03</span>
       <div class="wr-card-body">
@@ -236,7 +246,7 @@ hide:
     </a>
 
     <a href="web/PII-discl/" class="wr-card" data-cat="web">
-      <span class="wr-num">02</span>
+      <span class="wr-num">04</span>
       <div class="wr-card-body">
         <div class="wr-tag">Web Security</div>
         <div class="wr-card-name">JavaScript Recon to PII Exposure</div>
@@ -246,7 +256,7 @@ hide:
     </a>
     
     <a href="maldev/payload-Hiding/" class="wr-card" data-cat="maldev">
-      <span class="wr-num">04</span>
+      <span class="wr-num">05</span>
       <div class="wr-card-body">
         <div class="wr-tag">Malware Development</div>
         <div class="wr-card-name">Payload Hiding Techniques</div>
