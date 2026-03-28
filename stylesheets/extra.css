@@ -1,0 +1,11 @@
+/* Push the last navigation tab (Whoami) to the far right */
+@media screen and (min-width: 76.25em) {
+  .md-tabs__list {
+    display: flex;
+    width: 100%;
+  }
+
+  .md-tabs__item:last-child {
+    margin-left: auto;
+  }
+}

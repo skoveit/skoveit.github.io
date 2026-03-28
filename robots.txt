@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://skoveit.github.io/sitemap.xml

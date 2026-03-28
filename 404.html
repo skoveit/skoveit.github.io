@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Redirecting...</title>
+    <script>
+        (function () {
+            const oldPath = window.location.pathname;
+
+            if (oldPath.startsWith('/skoving/')) {
+                // Strip the old subfolder prefix and redirect
+                const newPath = oldPath.replace('/skoving/', '/');
+                window.location.replace(newPath + window.location.search + window.location.hash);
+            } else {
+                // Just go home if it's a true 404
+                window.location.replace("/");
+            }
+        })();
+    </script>
+</head>
+
+<body>
+    <p>Redirecting to the new location...</p>
+</body>
+
+</html>
