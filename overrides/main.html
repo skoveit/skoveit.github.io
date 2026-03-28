@@ -4,7 +4,7 @@ This file was automatically generated - do not edit
 {% extends "base.html" %}
 
 {% block htmltitle %}
-<title>{% if page.title %}{{ page.title }} — Skoving{% else %}Skoving — Offensive Security Research{% endif %}</title>
+<title>{% if page.title %}{{ page.title }}{% else %}Offensive Security Research{% endif %}</title>
 {% endblock %}
 
 {% block extrahead %}
@@ -18,7 +18,7 @@ This file was automatically generated - do not edit
 <meta property="og:url" content="https://skoveit.github.io{{ page.url }}" />
 <meta property="og:image" content="https://skoveit.github.io/assets/images/profile.png" />
 <meta property="og:title"
-    content="{% if page.title %}{{ page.title }} — Skoving{% else %}Skoving — Offensive Security Research{% endif %}" />
+    content="{% if page.title %}{{ page.title }}{% else %}Offensive Security Research{% endif %}" />
 <meta property="og:description"
     content="{% if page.meta.description %}{{ page.meta.description }}{% else %}Research and notes by Anas Mohammed (Skove) — Red Teaming, Web Security, Malware Development.{% endif %}" />
 <!-- Twitter Card -->
@@ -26,7 +26,7 @@ This file was automatically generated - do not edit
 <meta name="twitter:site" content="@skoveit" />
 <meta name="twitter:image" content="https://skoveit.github.io/assets/images/profile.jpg" />
 <meta name="twitter:title"
-    content="{% if page.title %}{{ page.title }} — Skoving{% else %}Skoving — Offensive Security Research{% endif %}" />
+    content="{% if page.title %}{{ page.title }}{% else %}Offensive Security Research{% endif %}" />
 <meta name="twitter:description"
     content="{% if page.meta.description %}{{ page.meta.description }}{% else %}Research and notes by Anas Mohammed (Skove) — Red Teaming, Web Security, Malware Development.{% endif %}" />
 {% include "partials/clarity.html" %}
